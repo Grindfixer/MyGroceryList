@@ -91,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
                 if (!groceryItem.getText().toString().isEmpty()
                     && !quanity.getText().toString().isEmpty()) {
                     saveGroceryToDB(view);
+
+
                 }
             }
         });
