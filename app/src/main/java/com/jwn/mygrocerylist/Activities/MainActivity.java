@@ -1,6 +1,8 @@
 package com.jwn.mygrocerylist.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,6 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import com.jwn.mygrocerylist.Data.DatabaseHandler;
+import com.jwn.mygrocerylist.Model.Grocery;
 import com.jwn.mygrocerylist.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,11 +26,17 @@ public class MainActivity extends AppCompatActivity {
     private EditText groceryItem;
     private EditText quanity;
     private Button saveButton;
+    private DatabaseHandler db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        db = new DatabaseHandler(this);
+
+        byPassActivity();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -77,14 +88,44 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 //Todo: save to db
                 //Todo: Go to next screen
-
-                 saveGroceryToDB(view);
-
+                if (!groceryItem.getText().toString().isEmpty()
+                    && !quanity.getText().toString().isEmpty()) {
+                    saveGroceryToDB(view);
+                }
             }
         });
     }
 
     private void saveGroceryToDB(View view) {
 
+        Grocery grocery = new Grocery();
+        String newGrocery = groceryItem.getText().toString();
+        String newGroceryQuantity = quanity.getText().toString();
+
+        grocery.setName(newGrocery);
+        grocery.setQuantity(newGroceryQuantity);
+
+        //Save to DB
+        db.addGrocery(grocery);
+
+        Snackbar.make(view, "Item Saved", Snackbar.LENGTH_LONG).show();
+
+       // Log.d("Item Added ID: ", String.valueOf(db.getGroceriesCount()));
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                dialog.dismiss();
+                //start new activity
+                startActivity(new Intent(MainActivity.this, ListActivity.class));
+            }
+        }, 1200);// 1 second
     }
+
+    public void byPassActivity() {
+        if (db.getGroceriesCount() > 0) {
+            startActivity(new Intent(MainActivity.this, ListActivity.class));
+            finish();
+        }
+    }
+
 }
